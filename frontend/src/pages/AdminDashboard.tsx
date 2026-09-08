@@ -746,12 +746,18 @@ const AdminDashboard: React.FC = () => {
       >
         <div className="p-6 flex items-center justify-between border-b border-white/5 h-20">
           {isSidebarOpen && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-white"><ShieldAlert size={16} /></div>
-              <span className="font-black text-lg tracking-tight text-white">OneStall</span>
-            </motion.div>
+            <Link to="/">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-3 cursor-pointer">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-white"><ShieldAlert size={16} /></div>
+                <span className="font-black text-lg tracking-tight text-white hover:text-amber-500 transition-colors">OneStall</span>
+              </motion.div>
+            </Link>
           )}
-          {!isSidebarOpen && <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-white mx-auto"><ShieldAlert size={16} /></div>}
+          {!isSidebarOpen && (
+            <Link to="/" className="mx-auto">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-white cursor-pointer"><ShieldAlert size={16} /></div>
+            </Link>
+          )}
           <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="absolute -right-4 top-6 w-8 h-8 bg-[#111] border border-white/10 rounded-full flex items-center justify-center text-slate-400 hover:text-white cursor-pointer z-50">
              {isSidebarOpen ? <X size={14} /> : <Menu size={14} />}
           </button>
