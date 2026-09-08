@@ -21,7 +21,11 @@ import {
   ChevronRight,
   Code2,
   MapPin,
-  Settings
+  Settings,
+  ShoppingBag,
+  Tag,
+  Image as ImageIcon,
+  ShoppingCart
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Link, useNavigate } from 'react-router-dom';
@@ -63,6 +67,12 @@ const AdminDashboard: React.FC = () => {
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'marketplace', label: 'E-Commerce Suite', icon: ShoppingCart, subItems: [
+        { id: 'catalog', label: 'Catalog & Products' },
+        { id: 'offers', label: 'Offers & Marketing' },
+        { id: 'siteui', label: 'Site UI & Images' },
+        { id: 'orders', label: 'Marketplace Orders' }
+    ]},
     { id: 'sellers', label: 'Seller Management', icon: StoreIcon, subItems: [
         { id: 'kyc', label: 'Registration/KYC' },
         { id: 'import', label: 'Order Import' },
@@ -323,6 +333,148 @@ const AdminDashboard: React.FC = () => {
                   <div className="flex justify-between"><span className="text-slate-500">Vendor Billed</span><span className="text-white">₹65.00</span></div>
                   <div className="flex justify-between"><span className="text-slate-500">Delivery Boy App Status</span><span className="text-amber-400">Offline since 20 mins</span></div>
                   <div className="flex justify-between"><span className="text-slate-500">Rider Real-Time GPS</span><span className="text-blue-400 underline cursor-pointer">Lat: 28.61, Lng: 77.20</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (activeTab === 'marketplace-catalog') {
+      return (
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 h-full flex flex-col">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-bold text-white flex items-center gap-2"><ShoppingBag className="text-cyan-400" /> Catalog & Products</h2>
+            <button className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-4 py-2 rounded-xl transition-all text-sm">+ Add New Product</button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+              <p className="text-xs text-slate-400">Total Products</p>
+              <p className="text-2xl font-bold text-white">1,248</p>
+            </div>
+            <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+              <p className="text-xs text-slate-400">Active Categories</p>
+              <p className="text-2xl font-bold text-white">45</p>
+            </div>
+            <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+              <p className="text-xs text-slate-400">Out of Stock</p>
+              <p className="text-2xl font-bold text-rose-400">12</p>
+            </div>
+            <div className="bg-white/5 p-4 rounded-xl border border-white/10 flex items-center justify-center">
+              <button className="text-cyan-400 hover:text-cyan-300 text-sm font-bold flex items-center gap-1"><Settings size={16}/> Manage Categories</button>
+            </div>
+          </div>
+          <div className="flex-1 overflow-auto no-scrollbar bg-black/20 rounded-xl border border-white/5 p-4">
+            <table className="w-full text-left text-sm">
+              <thead className="text-slate-400 border-b border-white/10">
+                <tr><th className="pb-3 font-medium">Product Name</th><th className="pb-3 font-medium">Category</th><th className="pb-3 font-medium">Price</th><th className="pb-3 font-medium">Stock</th><th className="pb-3 text-right font-medium">Actions</th></tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {[1, 2, 3].map(i => (
+                  <tr key={i} className="hover:bg-white/5 transition-colors">
+                    <td className="py-3 flex items-center gap-3">
+                      <div className="w-10 h-10 bg-white/10 rounded-md"></div>
+                      <div>
+                        <p className="text-white font-bold">Premium Wireless Headphones {i}</p>
+                        <p className="text-xs text-slate-400">SKU: WH-100{i}</p>
+                      </div>
+                    </td>
+                    <td className="py-3 text-slate-300">Electronics</td>
+                    <td className="py-3 text-white font-bold">₹2,499</td>
+                    <td className="py-3"><span className="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded text-xs">In Stock</span></td>
+                    <td className="py-3 text-right">
+                      <button className="text-cyan-400 hover:text-cyan-300 text-xs font-bold px-2">Edit</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      );
+    }
+
+    if (activeTab === 'marketplace-offers') {
+      return (
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 h-full flex flex-col">
+          <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2"><Tag className="text-indigo-400" /> Offers & Marketing</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
+            <div className="bg-black/20 p-6 rounded-2xl border border-white/5">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-white">Active Promo Codes</h3>
+                <button className="text-indigo-400 text-xs font-bold">+ Create Code</button>
+              </div>
+              <div className="space-y-3">
+                <div className="bg-white/5 p-4 rounded-xl border border-white/10 flex justify-between items-center">
+                  <div>
+                    <p className="font-mono text-indigo-400 font-bold text-lg">DIWALI50</p>
+                    <p className="text-xs text-slate-400">Flat 50% Off up to ₹500</p>
+                  </div>
+                  <span className="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded text-xs">Active</span>
+                </div>
+                <div className="bg-white/5 p-4 rounded-xl border border-white/10 flex justify-between items-center">
+                  <div>
+                    <p className="font-mono text-indigo-400 font-bold text-lg">FREESHIP</p>
+                    <p className="text-xs text-slate-400">Free Shipping on orders &gt; ₹999</p>
+                  </div>
+                  <span className="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded text-xs">Active</span>
+                </div>
+              </div>
+            </div>
+            <div className="bg-black/20 p-6 rounded-2xl border border-white/5">
+              <h3 className="font-bold text-white mb-4">Flash Sales & Deals</h3>
+              <div className="bg-gradient-to-br from-indigo-500/20 to-purple-500/20 p-6 rounded-xl border border-indigo-500/30 text-center space-y-4">
+                <Tag size={48} className="mx-auto text-indigo-400" />
+                <div>
+                  <p className="font-bold text-white text-lg">Weekend Mega Sale</p>
+                  <p className="text-xs text-slate-300">Starts in 2 days. 45 products enrolled.</p>
+                </div>
+                <button className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 py-2 rounded-xl text-sm transition-all">Manage Sale Items</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (activeTab === 'marketplace-siteui') {
+      return (
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 h-full flex flex-col">
+          <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2"><ImageIcon className="text-fuchsia-400" /> Site UI & Image Banners</h2>
+          <div className="flex-1 overflow-auto no-scrollbar space-y-6">
+            <div className="bg-black/20 p-6 rounded-2xl border border-white/5">
+              <h3 className="font-bold text-white mb-4">Homepage Sliders</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="aspect-video bg-white/5 border-2 border-dashed border-white/20 rounded-xl flex items-center justify-center group hover:border-fuchsia-400 transition-colors cursor-pointer">
+                  <div className="text-center">
+                    <ImageIcon size={32} className="mx-auto text-slate-500 group-hover:text-fuchsia-400 mb-2 transition-colors" />
+                    <p className="text-sm font-bold text-slate-400 group-hover:text-fuchsia-300">Upload Banner 1</p>
+                  </div>
+                </div>
+                <div className="aspect-video bg-white/10 border border-white/20 rounded-xl flex items-end p-4 bg-[url('https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=600')] bg-cover bg-center">
+                   <button className="bg-black/60 backdrop-blur-md text-white text-xs px-3 py-1.5 rounded-lg border border-white/20 hover:bg-black/80">Change Image</button>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-black/20 p-6 rounded-2xl border border-white/5">
+              <h3 className="font-bold text-white mb-4">Promotional Blocks</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-white/5 p-4 rounded-xl border border-white/10 text-center space-y-2">
+                  <div className="h-24 bg-white/10 rounded-lg"></div>
+                  <p className="text-xs text-slate-400">Left Promo Block</p>
+                  <button className="text-fuchsia-400 text-xs font-bold">Edit</button>
+                </div>
+                <div className="bg-white/5 p-4 rounded-xl border border-white/10 text-center space-y-2">
+                  <div className="h-24 bg-white/10 rounded-lg"></div>
+                  <p className="text-xs text-slate-400">Center Promo Block</p>
+                  <button className="text-fuchsia-400 text-xs font-bold">Edit</button>
+                </div>
+                <div className="bg-white/5 p-4 rounded-xl border border-white/10 text-center space-y-2">
+                  <div className="h-24 bg-white/10 rounded-lg"></div>
+                  <p className="text-xs text-slate-400">Right Promo Block</p>
+                  <button className="text-fuchsia-400 text-xs font-bold">Edit</button>
                 </div>
               </div>
             </div>
