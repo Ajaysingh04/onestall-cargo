@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-primary: #0B132B;
+  --color-brand-surface: #101C3D;
+  --color-brand-card: #16244E;
+  --color-brand-border: #22356B;
+  --color-cargo-blue: #2563EB;
+  --color-cargo-cyan: #06B6D4;
+  --color-cargo-amber: #F59E0B;
+  --color-cargo-green: #10B981;
+  --color-cargo-red: #EF4444;
+  
+  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-heading: 'Outfit', sans-serif;
+}
+
+@layer base {
+  :root {
+    --background: #070D1E;
+    --foreground: #F8FAFC;
+    --surface: #0E1838;
+    --card: #14214B;
+    --border: #1E3066;
+  }
+  
+  html {
+    font-family: var(--font-sans);
+    scroll-behavior: smooth;
+    color-scheme: dark;
+  }
+  
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    min-height: 100vh;
+  }
+}
+
+@layer utilities {
+  .font-heading {
+    font-family: var(--font-heading);
+  }
+
+  .glass-header {
+    background: rgba(7, 13, 30, 0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(34, 53, 107, 0.6);
+  }
+  
+  .glass-card {
+    background: rgba(16, 28, 61, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(34, 53, 107, 0.7);
+  }
+
+  .glass-card-hover {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .glass-card-hover:hover {
+    transform: translateY(-3px);
+    border-color: rgba(37, 99, 235, 0.6);
+    box-shadow: 0 12px 30px -10px rgba(37, 99, 235, 0.25);
+  }
+
+  .text-gradient-blue {
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    background-image: linear-gradient(135deg, #60A5FA 0%, #2563EB 50%, #38BDF8 100%);
+  }
+
+  .text-gradient-cargo {
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    background-image: linear-gradient(135deg, #FBBF24 0%, #F59E0B 50%, #FB923C 100%);
+  }
+
+  .glow-blue {
+    box-shadow: 0 0 25px -5px rgba(37, 99, 235, 0.4);
+  }
+  
+  .glow-green {
+    box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.4);
+  }
+}
