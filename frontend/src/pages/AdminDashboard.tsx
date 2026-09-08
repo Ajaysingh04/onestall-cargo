@@ -234,6 +234,103 @@ const AdminDashboard: React.FC = () => {
       );
     }
 
+    if (activeTab === 'bookings-ndr') {
+      return (
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 h-full flex flex-col">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">Customer Action Requests (NDR)</h2>
+              <p className="text-xs text-slate-400 mt-1">Manage address corrections, reschedule requests, and cancellations raised by customers.</p>
+            </div>
+            <div className="flex gap-2">
+               <span className="bg-rose-500/20 text-rose-400 px-3 py-1 rounded-full text-xs font-bold">12 Action Required</span>
+            </div>
+          </div>
+          <div className="flex-1 overflow-auto no-scrollbar">
+            <table className="w-full text-left text-sm">
+              <thead className="text-slate-400 uppercase text-[10px] tracking-widest border-b border-white/10">
+                <tr><th className="pb-4">AWB / Customer</th><th className="pb-4">Issue Type</th><th className="pb-4">Customer Request Details</th><th className="pb-4">Status</th><th className="pb-4 text-right">Admin Action</th></tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {[
+                  { awb: 'OS-882910412', name: 'Priya Verma', type: 'ADDRESS_CORRECTION', details: 'Added missing landmark: Near Blue Bell School.', status: 'PENDING' },
+                  { awb: 'OS-719382014', name: 'Rahul Gupta', type: 'RESCHEDULE', details: 'Deliver on Monday instead of today.', status: 'PENDING' },
+                  { awb: 'OS-551029381', name: 'Sneha Patel', type: 'CANCEL_RETURN', details: 'Not required anymore, please RTO.', status: 'PENDING' },
+                ].map((item, i) => (
+                  <tr key={i} className="hover:bg-white/[0.03] transition-colors">
+                    <td className="py-4">
+                      <div className="font-mono text-white text-xs font-bold">{item.awb}</div>
+                      <div className="text-slate-400 text-[11px]">{item.name}</div>
+                    </td>
+                    <td className="py-4">
+                      <span className={`px-2 py-1 rounded text-[10px] font-bold ${
+                        item.type === 'ADDRESS_CORRECTION' ? 'bg-blue-500/20 text-blue-400' : 
+                        item.type === 'RESCHEDULE' ? 'bg-amber-500/20 text-amber-400' : 'bg-rose-500/20 text-rose-400'
+                      }`}>
+                        {item.type.replace('_', ' ')}
+                      </span>
+                    </td>
+                    <td className="py-4 text-slate-300 text-xs">{item.details}</td>
+                    <td className="py-4"><span className="text-amber-400 text-xs font-bold">Requires Approval</span></td>
+                    <td className="py-4 text-right flex justify-end gap-2">
+                      <button className="bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors">Approve</button>
+                      <button className="bg-white/5 text-slate-300 hover:bg-white/10 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors">Reject</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      );
+    }
+
+    if (activeTab === 'customers-tracking') {
+      return (
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 h-full flex flex-col">
+          <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2"><Search size={20} className="text-blue-400" /> Admin Master Tracking Console</h2>
+          
+          <div className="flex gap-3 mb-6">
+            <input type="text" placeholder="Enter AWB (e.g. OS-882910412)" className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-mono focus:outline-none focus:border-blue-500" />
+            <button className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-3 rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-blue-600/30">
+              <Search size={16} /> Track Globally
+            </button>
+          </div>
+
+          <div className="flex-1 bg-black/20 rounded-2xl border border-white/5 p-6 space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-mono font-bold text-white">OS-882910412</h3>
+                <p className="text-xs text-slate-400 mt-1">Customer Tracking View vs Internal View</p>
+              </div>
+              <div className="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-xs font-bold border border-emerald-500/30">OUT FOR DELIVERY</div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <h4 className="text-sm font-bold text-slate-300 border-b border-white/10 pb-2">Customer Facing Data</h4>
+                <div className="space-y-2 text-xs">
+                  <div className="flex justify-between"><span className="text-slate-500">Status</span><span className="text-white">Out for Delivery</span></div>
+                  <div className="flex justify-between"><span className="text-slate-500">ETA</span><span className="text-white">Today, 9 PM</span></div>
+                  <div className="flex justify-between"><span className="text-slate-500">Assigned Rider</span><span className="text-white">Rahul Sharma</span></div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="text-sm font-bold text-rose-400 border-b border-white/10 pb-2">Internal Hidden Data (Admin Only)</h4>
+                <div className="space-y-2 text-xs">
+                  <div className="flex justify-between"><span className="text-slate-500">Actual Courier Cost</span><span className="text-rose-400 font-bold">₹42.50</span></div>
+                  <div className="flex justify-between"><span className="text-slate-500">Vendor Billed</span><span className="text-white">₹65.00</span></div>
+                  <div className="flex justify-between"><span className="text-slate-500">Delivery Boy App Status</span><span className="text-amber-400">Offline since 20 mins</span></div>
+                  <div className="flex justify-between"><span className="text-slate-500">Rider Real-Time GPS</span><span className="text-blue-400 underline cursor-pointer">Lat: 28.61, Lng: 77.20</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     // Generic Placeholder for other 45+ sub-tabs
     const [mainPart, subPart] = activeTab.split('-');
     const currentItem = menuItems.find(m => m.id === mainPart);
