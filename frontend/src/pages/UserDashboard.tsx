@@ -144,7 +144,7 @@ const UserDashboard: React.FC = () => {
   if (!userInfo) return null;
 
   return (
-    <div className="container mx-auto px-4 lg:px-8 py-12">
+    <div className="container mx-auto px-4 lg:px-8 pt-6 pb-12">
       <div className="flex flex-col lg:flex-row gap-8">
         
         {/* Sidebar */}
