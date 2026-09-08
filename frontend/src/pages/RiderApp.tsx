@@ -154,7 +154,35 @@ const RiderApp: React.FC = () => {
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-5 space-y-4">
               <div>
                 <label className="text-xs text-slate-300 font-bold flex justify-between mb-2"><span>Enter Delivery OTP</span><span className="text-amber-400">Demo: 7492</span></label>
-                <input type="text" maxLength={4} value={enteredOtp} onChange={(e) => setEnteredOtp(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-center text-2xl font-mono tracking-widest text-white focus:outline-none focus:border-amber-500" required />
+                <div className="flex justify-between gap-3">
+                {[0, 1, 2, 3].map((index) => (
+                  <input
+                    key={index}
+                    id={`otp-${index}`}
+                    type="text"
+                    maxLength={1}
+                    value={enteredOtp[index] || ''}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (!/^[0-9]*$/.test(val)) return;
+                      const newOtp = enteredOtp.split('');
+                      newOtp[index] = val;
+                      const finalOtp = newOtp.join('');
+                      setEnteredOtp(finalOtp);
+                      if (val && index < 3) {
+                        document.getElementById(`otp-${index + 1}`)?.focus();
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Backspace' && !enteredOtp[index] && index > 0) {
+                        document.getElementById(`otp-${index - 1}`)?.focus();
+                      }
+                    }}
+                    className="w-14 h-14 bg-black/60 border border-white/20 rounded-2xl text-center text-2xl font-mono text-white focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all shadow-inner"
+                    required
+                  />
+                ))}
+              </div>
               </div>
 
               <div>
