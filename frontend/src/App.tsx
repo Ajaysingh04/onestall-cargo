@@ -32,7 +32,14 @@ const App: React.FC = () => {
     <Router>
       <Suspense fallback={<PageLoader />}>
         <Routes>
-          {/* Main Layout Wrapping All Portals */}
+          {/* Role-Based Enterprise Portals (Standalone Full-Screen UI) */}
+          <Route path="/seller" element={<SellerPortal />} />
+          <Route path="/franchise" element={<FranchisePortal />} />
+          <Route path="/rider" element={<RiderApp />} />
+          <Route path="/warehouse" element={<WarehousePortal />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+
+          {/* Main Layout Wrapping Customer/E-Commerce Routes */}
           <Route path="/" element={<MainLayout />}>
             <Route index element={<Home />} />
             
@@ -41,12 +48,7 @@ const App: React.FC = () => {
             <Route path="track" element={<CargoPortal />} />
             <Route path="track/:awb" element={<CargoPortal />} />
 
-            {/* Role-Based Enterprise Portals (PRD Section 3 & 4) */}
-            <Route path="seller" element={<SellerPortal />} />
-            <Route path="franchise" element={<FranchisePortal />} />
-            <Route path="rider" element={<RiderApp />} />
-            <Route path="warehouse" element={<WarehousePortal />} />
-            <Route path="admin" element={<AdminDashboard />} />
+            {/* Developer API Docs */}
             <Route path="developer/api" element={<ApiDocs />} />
 
             {/* Marketplace Shopping Flow */}
