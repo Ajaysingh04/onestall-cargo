@@ -34,9 +34,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { RootState, AppDispatch } from '../store/store';
 import { login, switchDemoRole, logout } from '../slices/authSlice';
 import axios from 'axios';
-import { api } from '../utils/api'; // fallback if needed, but let's use axios directly with auth headers if needed
-// Or even better, use the auth token from Redux state
 
+
+const salesData = [
   { name: 'Mon', gmv: 84000 }, { name: 'Tue', gmv: 92000 }, { name: 'Wed', gmv: 110000 },
   { name: 'Thu', gmv: 104000 }, { name: 'Fri', gmv: 145000 }, { name: 'Sat', gmv: 182000 }, { name: 'Sun', gmv: 210000 },
 ];
