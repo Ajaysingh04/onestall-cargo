@@ -52,7 +52,6 @@ const productSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: ['Fashion', 'Electronics', 'FMCG', 'Beauty', 'Home & Kitchen', 'Gourmet & Food', 'Fresh & Grocery'],
     default: 'Fashion',
   },
   subcategory: {

@@ -33,8 +33,10 @@ import { useSelector, useDispatch } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { RootState, AppDispatch } from '../store/store';
 import { login, switchDemoRole, logout } from '../slices/authSlice';
+import axios from 'axios';
+import { api } from '../utils/api'; // fallback if needed, but let's use axios directly with auth headers if needed
+// Or even better, use the auth token from Redux state
 
-const salesData = [
   { name: 'Mon', gmv: 84000 }, { name: 'Tue', gmv: 92000 }, { name: 'Wed', gmv: 110000 },
   { name: 'Thu', gmv: 104000 }, { name: 'Fri', gmv: 145000 }, { name: 'Sat', gmv: 182000 }, { name: 'Sun', gmv: 210000 },
 ];
@@ -62,6 +64,131 @@ const AdminDashboard: React.FC = () => {
       setAuthError(err || 'Authentication failed. Please check credentials.');
     }
   };
+
+  // --- E-Commerce Product State ---
+  const [products, setProducts] = useState<any[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(false);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [productForm, setProductForm] = useState({
+    name: '',
+    category: '',
+    price: '',
+    mrp: '',
+    countInStock: '',
+    description: '',
+    brand: '',
+    image: '',
+  });
+  const [imageUploadType, setImageUploadType] = useState<'url' | 'file'>('url');
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === 'marketplace-catalog') {
+      fetchProducts();
+    }
+  }, [activeTab]);
+
+  const fetchProducts = async () => {
+    setLoadingProducts(true);
+    try {
+      const { data } = await axios.get('/api/products');
+      setProducts(data);
+    } catch (error) {
+      console.error('Failed to fetch products', error);
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
+
+  const handleProductSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const config = {
+        headers: { Authorization: `Bearer ${userInfo?.token}` }
+      };
+      
+      const payload = {
+        ...productForm,
+        price: Number(productForm.price),
+        mrp: Number(productForm.mrp),
+        countInStock: Number(productForm.countInStock)
+      };
+
+      if (editingProduct) {
+        await axios.put(`/api/products/${editingProduct._id}`, payload, config);
+      } else {
+        await axios.post('/api/products', payload, config);
+      }
+      setIsProductModalOpen(false);
+      fetchProducts();
+    } catch (error) {
+      console.error('Error saving product', error);
+      alert('Error saving product. Check console.');
+    }
+  };
+
+  const handleDeleteProduct = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this product?')) return;
+    try {
+      const config = {
+        headers: { Authorization: `Bearer ${userInfo?.token}` }
+      };
+      await axios.delete(`/api/products/${id}`, config);
+      fetchProducts();
+    } catch (error) {
+      console.error('Error deleting product', error);
+    }
+  };
+
+  const openAddModal = () => {
+    setEditingProduct(null);
+    setProductForm({ name: '', category: '', price: '', mrp: '', countInStock: '', description: '', brand: '', image: '' });
+    setImageUploadType('url');
+    setIsProductModalOpen(true);
+  };
+
+  const openEditModal = (p: any) => {
+    setEditingProduct(p);
+    setProductForm({
+      name: p.name,
+      category: p.category,
+      price: p.price,
+      mrp: p.mrp || p.price,
+      countInStock: p.countInStock,
+      description: p.description,
+      brand: p.brand,
+      image: p.image,
+    });
+    setImageUploadType(p.image.startsWith('http') || p.image.startsWith('/') ? 'url' : 'file'); // Best guess
+    setIsProductModalOpen(true);
+  };
+
+  const uploadFileHandler = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('image', file);
+    setUploadingImage(true);
+
+    try {
+      const config = {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      };
+      const { data } = await axios.post('/api/upload', formData, config);
+      setProductForm({ ...productForm, image: data.imagePath || data });
+    } catch (error) {
+      console.error(error);
+      alert('Image upload failed');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+  // --------------------------------
+
 
   const isSuperAdmin = userInfo?.isAdmin || userInfo?.role === 'super_admin';
 
@@ -342,54 +469,164 @@ const AdminDashboard: React.FC = () => {
     }
 
     if (activeTab === 'marketplace-catalog') {
+      const activeCategories = Array.from(new Set(products.map(p => p.category))).length;
+      const outOfStock = products.filter(p => p.countInStock === 0).length;
+
       return (
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 h-full flex flex-col">
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 h-full flex flex-col relative">
+          
+          {/* PRODUCT MODAL OVERLAY */}
+          {isProductModalOpen && (
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-50 rounded-3xl flex items-center justify-center p-4">
+              <div className="bg-[#111827] border border-white/10 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-full overflow-hidden">
+                <div className="p-5 border-b border-white/10 flex justify-between items-center bg-white/5">
+                  <h3 className="text-xl font-bold text-white">{editingProduct ? 'Edit Product' : 'Add New Product'}</h3>
+                  <button onClick={() => setIsProductModalOpen(false)} className="text-slate-400 hover:text-white"><X size={20}/></button>
+                </div>
+                
+                <form onSubmit={handleProductSubmit} className="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-400 mb-1">Product Name</label>
+                      <input type="text" required value={productForm.name} onChange={e => setProductForm({...productForm, name: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-400 mb-1">Category</label>
+                      <input type="text" required value={productForm.category} onChange={e => setProductForm({...productForm, category: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500" placeholder="e.g. Fashion, Electronics" />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-400 mb-1">Selling Price (₹)</label>
+                      <input type="number" required value={productForm.price} onChange={e => setProductForm({...productForm, price: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-400 mb-1">MRP (₹)</label>
+                      <input type="number" required value={productForm.mrp} onChange={e => setProductForm({...productForm, mrp: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-400 mb-1">Stock Count</label>
+                      <input type="number" required value={productForm.countInStock} onChange={e => setProductForm({...productForm, countInStock: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500" />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-400 mb-1">Brand</label>
+                      <input type="text" required value={productForm.brand} onChange={e => setProductForm({...productForm, brand: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500" />
+                    </div>
+                  </div>
+                  
+                  {/* Image Upload Block */}
+                  <div className="border border-white/10 rounded-xl p-4 bg-white/5">
+                    <label className="block text-xs font-bold text-slate-400 mb-3">Product Image</label>
+                    <div className="flex gap-4 mb-3">
+                      <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+                        <input type="radio" checked={imageUploadType === 'url'} onChange={() => setImageUploadType('url')} name="imgType" className="accent-cyan-500" /> Use Image URL
+                      </label>
+                      <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+                        <input type="radio" checked={imageUploadType === 'file'} onChange={() => setImageUploadType('file')} name="imgType" className="accent-cyan-500" /> Upload File
+                      </label>
+                    </div>
+
+                    {imageUploadType === 'url' ? (
+                      <input type="text" placeholder="https://..." value={productForm.image} onChange={e => setProductForm({...productForm, image: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500" />
+                    ) : (
+                      <div className="relative">
+                         <input type="file" onChange={uploadFileHandler} className="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-cyan-500/20 file:text-cyan-400 hover:file:bg-cyan-500/30 transition-colors" />
+                         {uploadingImage && <span className="absolute right-4 top-2 text-xs text-cyan-400 font-bold animate-pulse">Uploading...</span>}
+                         {productForm.image && imageUploadType === 'file' && <p className="text-xs text-emerald-400 mt-2 truncate">Current File: {productForm.image}</p>}
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 mb-1">Description</label>
+                    <textarea rows={3} required value={productForm.description} onChange={e => setProductForm({...productForm, description: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500" />
+                  </div>
+
+                  <div className="pt-4 border-t border-white/10 flex justify-end gap-3">
+                    <button type="button" onClick={() => setIsProductModalOpen(false)} className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-300 hover:bg-white/10 transition-colors">Cancel</button>
+                    <button type="submit" disabled={uploadingImage} className="px-5 py-2.5 rounded-xl text-sm font-bold bg-cyan-600 hover:bg-cyan-500 text-white transition-colors disabled:opacity-50">
+                      {editingProduct ? 'Update Product' : 'Save Product'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+          {/* END MODAL */}
+
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold text-white flex items-center gap-2"><ShoppingBag className="text-cyan-400" /> Catalog & Products</h2>
-            <button className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-4 py-2 rounded-xl transition-all text-sm">+ Add New Product</button>
+            <button onClick={openAddModal} className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-4 py-2 rounded-xl transition-all text-sm shadow-lg shadow-cyan-600/20">+ Add New Product</button>
           </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-white/5 p-4 rounded-xl border border-white/10">
               <p className="text-xs text-slate-400">Total Products</p>
-              <p className="text-2xl font-bold text-white">1,248</p>
+              <p className="text-2xl font-bold text-white">{products.length}</p>
             </div>
             <div className="bg-white/5 p-4 rounded-xl border border-white/10">
               <p className="text-xs text-slate-400">Active Categories</p>
-              <p className="text-2xl font-bold text-white">45</p>
+              <p className="text-2xl font-bold text-white">{activeCategories}</p>
             </div>
             <div className="bg-white/5 p-4 rounded-xl border border-white/10">
               <p className="text-xs text-slate-400">Out of Stock</p>
-              <p className="text-2xl font-bold text-rose-400">12</p>
+              <p className="text-2xl font-bold text-rose-400">{outOfStock}</p>
             </div>
             <div className="bg-white/5 p-4 rounded-xl border border-white/10 flex items-center justify-center">
               <button className="text-cyan-400 hover:text-cyan-300 text-sm font-bold flex items-center gap-1"><Settings size={16}/> Manage Categories</button>
             </div>
           </div>
+
           <div className="flex-1 overflow-auto no-scrollbar bg-black/20 rounded-xl border border-white/5 p-4">
-            <table className="w-full text-left text-sm">
-              <thead className="text-slate-400 border-b border-white/10">
-                <tr><th className="pb-3 font-medium">Product Name</th><th className="pb-3 font-medium">Category</th><th className="pb-3 font-medium">Price</th><th className="pb-3 font-medium">Stock</th><th className="pb-3 text-right font-medium">Actions</th></tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {[1, 2, 3].map(i => (
-                  <tr key={i} className="hover:bg-white/5 transition-colors">
-                    <td className="py-3 flex items-center gap-3">
-                      <div className="w-10 h-10 bg-white/10 rounded-md"></div>
-                      <div>
-                        <p className="text-white font-bold">Premium Wireless Headphones {i}</p>
-                        <p className="text-xs text-slate-400">SKU: WH-100{i}</p>
-                      </div>
-                    </td>
-                    <td className="py-3 text-slate-300">Electronics</td>
-                    <td className="py-3 text-white font-bold">₹2,499</td>
-                    <td className="py-3"><span className="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded text-xs">In Stock</span></td>
-                    <td className="py-3 text-right">
-                      <button className="text-cyan-400 hover:text-cyan-300 text-xs font-bold px-2">Edit</button>
-                    </td>
+            {loadingProducts ? (
+              <div className="flex justify-center items-center h-full text-cyan-400">Loading products...</div>
+            ) : (
+              <table className="w-full text-left text-sm">
+                <thead className="text-slate-400 border-b border-white/10">
+                  <tr>
+                    <th className="pb-3 font-medium">Product Details</th>
+                    <th className="pb-3 font-medium">Category</th>
+                    <th className="pb-3 font-medium">Price</th>
+                    <th className="pb-3 font-medium">Stock</th>
+                    <th className="pb-3 text-right font-medium">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {products.length === 0 ? (
+                    <tr><td colSpan={5} className="py-8 text-center text-slate-500">No products found. Click "Add New Product" to start.</td></tr>
+                  ) : (
+                    products.map((p) => (
+                      <tr key={p._id} className="hover:bg-white/5 transition-colors group">
+                        <td className="py-3 flex items-center gap-3">
+                          <img src={p.image} alt={p.name} className="w-10 h-10 bg-white/10 rounded-md object-cover" />
+                          <div>
+                            <p className="text-white font-bold line-clamp-1">{p.name}</p>
+                            <p className="text-[10px] text-slate-500 font-mono">SKU: {p.sku || p._id.substring(0,8)}</p>
+                          </div>
+                        </td>
+                        <td className="py-3 text-slate-300"><span className="bg-white/10 px-2 py-1 rounded text-xs">{p.category}</span></td>
+                        <td className="py-3 text-white font-bold">₹{p.price} <span className="text-xs text-slate-500 line-through font-normal ml-1">₹{p.mrp}</span></td>
+                        <td className="py-3">
+                          {p.countInStock > 0 ? (
+                            <span className="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded text-xs">{p.countInStock} in stock</span>
+                          ) : (
+                            <span className="bg-rose-500/20 text-rose-400 px-2 py-1 rounded text-xs">Out of Stock</span>
+                          )}
+                        </td>
+                        <td className="py-3 text-right space-x-2">
+                          <button onClick={() => openEditModal(p)} className="text-cyan-400 hover:text-cyan-300 text-xs font-bold px-2 py-1 border border-cyan-500/30 rounded bg-cyan-500/10">Edit</button>
+                          <button onClick={() => handleDeleteProduct(p._id)} className="text-rose-400 hover:text-rose-300 text-xs font-bold px-2 py-1 border border-rose-500/30 rounded bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-opacity">Del</button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
       );
